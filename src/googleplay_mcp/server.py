@@ -105,4 +105,4 @@ def get_subscription_v2(payload: SubscriptionGetIn) -> SubscriptionGetOut:
 
 if __name__ == "__main__":
     # Default: STDIO transport (works with local MCP clients like Claude Desktop / MCP Inspector)
-    mcp.run()
+    mcp.run(transport="streamable-http")

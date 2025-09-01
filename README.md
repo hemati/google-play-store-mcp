@@ -21,7 +21,6 @@ conda create -n googleplay-mcp python=3.12 -y
 conda activate googleplay-mcp
 pip install -e .
 cp .env.example .env  # optional
-./scripts/run_stdio.sh
 ````
 
 ## Tools
