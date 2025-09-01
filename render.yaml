@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: googleplay-mcp
+    env: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: Dockerfile
+    autoDeploy: false
+    envVars:
+      - key: RENDER_BASIC_AUTH_USERNAME
+        fromEnv: BASIC_AUTH_USER
+      - key: RENDER_BASIC_AUTH_PASSWORD
+        fromEnv: BASIC_AUTH_PASSWORD
+      - key: SERVICE_ACCOUNT_JSON_B64
+        fromEnv: SERVICE_ACCOUNT_JSON_B64
