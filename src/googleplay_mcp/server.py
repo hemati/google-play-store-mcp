@@ -1,3 +1,9 @@
+"""MCP server exposing Google Play tools.
+
+This module wires together tool implementations and registers them with a
+`FastMCP` instance so that they can be invoked by MCP clients.
+"""
+
 from mcp.server.fastmcp import FastMCP
 
 from .models import (
@@ -22,7 +28,15 @@ mcp = FastMCP(
 
 @mcp.tool()
 def list_reviews(payload: ListReviewsIn) -> ListReviewsOut:
-    """Return recent Play Store reviews for a given package."""
+    """Fetch recent Play Store reviews for a package.
+
+    Args:
+        payload: Parameters including the package name, maximum number of
+            results to return and an optional translation language.
+
+    Returns:
+        ListReviewsOut: Review data returned by the Android Publisher API.
+    """
     data = list_reviews_impl(
         package_name=payload.package_name,
         max_results=payload.max_results,
@@ -33,7 +47,15 @@ def list_reviews(payload: ListReviewsIn) -> ListReviewsOut:
 
 @mcp.tool()
 def reply_to_review(payload: ReplyReviewIn) -> ReplyReviewOut:
-    """Reply to a specific Play Store review by its reviewId."""
+    """Send a reply to a specific Play Store review.
+
+    Args:
+        payload: Includes the package name, the review identifier and the
+            reply text.
+
+    Returns:
+        ReplyReviewOut: API response confirming the reply.
+    """
     data = reply_review_impl(
         package_name=payload.package_name,
         review_id=payload.review_id,
@@ -44,7 +66,15 @@ def reply_to_review(payload: ReplyReviewIn) -> ReplyReviewOut:
 
 @mcp.tool()
 def crash_rate(payload: CrashRateIn) -> CrashRateOut:
-    """Query crash-rate metrics for a package between two dates (DAILY aggregation)."""
+    """Retrieve crash-rate metrics for a package over a date range.
+
+    Args:
+        payload: Contains the package name, start and end dates and an optional
+            timezone for interpreting the date range.
+
+    Returns:
+        CrashRateOut: Crash-rate metrics from the Play Developer Reporting API.
+    """
     data = crash_rate_query_impl(
         package_name=payload.package_name,
         start_date=payload.start_date,
@@ -56,7 +86,16 @@ def crash_rate(payload: CrashRateIn) -> CrashRateOut:
 
 @mcp.tool()
 def get_subscription_v2(payload: SubscriptionGetIn) -> SubscriptionGetOut:
-    """Verify a subscription using purchases.subscriptionsv2.get."""
+    """Verify a user's subscription purchase.
+
+    Args:
+        payload: Includes the application package name and the purchase token
+            returned by the client.
+
+    Returns:
+        SubscriptionGetOut: Result from the
+        `purchases.subscriptionsv2.get` API call.
+    """
     data = subscriptions_v2_get_impl(
         package_name=payload.package_name,
         token=payload.token,

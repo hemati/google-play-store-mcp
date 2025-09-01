@@ -5,9 +5,23 @@ from googleapiclient.discovery import build
 from ..auth import service_account_credentials, REPORTING_SCOPE
 
 
-def crash_rate_query_impl(package_name: str, start_date: str, end_date: str, timezone: str = "Europe/Berlin") -> Dict[
-    str, Any]:
-    """Query crash rate metrics for an app between two dates using Reporting API."""
+def crash_rate_query_impl(
+    package_name: str,
+    start_date: str,
+    end_date: str,
+    timezone: str = "Europe/Berlin",
+) -> Dict[str, Any]:
+    """Query crash-rate metrics for an app.
+
+    Args:
+        package_name: Application package name.
+        start_date: Start date in ``YYYY-MM-DD`` format.
+        end_date: End date in ``YYYY-MM-DD`` format.
+        timezone: IANA timezone identifier for the date range.
+
+    Returns:
+        Dict[str, Any]: Crash-rate metrics grouped by version code.
+    """
     creds = service_account_credentials(REPORTING_SCOPE)
     svc = build("playdeveloperreporting", "v1beta1", credentials=creds, cache_discovery=False)
 
@@ -22,7 +36,7 @@ def crash_rate_query_impl(package_name: str, start_date: str, end_date: str, tim
         "metrics": [
             "crashRate",
             "crashRate7dUserWeighted",
-            "crashRate28dUserWeighted"
+            "crashRate28dUserWeighted",
         ],
         "dimensions": ["versionCode"],
         "pageSize": 1000,
