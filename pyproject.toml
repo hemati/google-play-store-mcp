@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "googleplay-mcp"
+version = "0.1.0"
+description = "MCP server exposing Google Play tools (reviews, reporting, purchases)."
+readme = "README.md"
+authors = [{ name = "Your Name", email = "you@example.com" }]
+requires-python = ">=3.10"
+dependencies = [
+  "mcp>=1.0.0",                     # Official MCP Python SDK
+  "fastmcp>=2.0.0",                 # High-level server helpers
+  "pydantic>=2.7",
+  "python-dotenv>=1.0",
+  "google-api-python-client>=2.130",
+  "google-auth>=2.30",
+  "google-auth-oauthlib>=1.2",
+  "httpx>=0.27",
+  "tenacity>=9.0"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+pythonpath = ["src"]
