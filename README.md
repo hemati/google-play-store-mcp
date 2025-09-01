@@ -17,8 +17,8 @@ Python **MCP** server exposing Google Play tools:
 ## Install & Run (local)
 
 ```bash
-uv venv || python -m venv .venv
-source .venv/bin/activate
+conda create -n googleplay-mcp python=3.12 -y
+conda activate googleplay-mcp
 pip install -e .
 cp .env.example .env  # optional
 ./scripts/run_stdio.sh
