@@ -1,7 +1,10 @@
-import os
 import json
+import os
+from pathlib import Path
 
 from pydantic import BaseModel
+
+mod_path = Path(__file__).parent
 
 
 class Settings(BaseModel):
@@ -13,7 +16,7 @@ class Settings(BaseModel):
         path = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
         # Fallback to conventional local path if env var not set
         if not path:
-            default_path = os.path.abspath(os.path.join("./secrets", "service_account.json"))
+            default_path = mod_path / "../.." / "secrets" / "service_account.json"
             if os.path.exists(default_path):
                 path = default_path
             else:

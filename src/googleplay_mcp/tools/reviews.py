@@ -6,9 +6,9 @@ from ..auth import service_account_credentials, ANDROID_PUBLISHER_SCOPE
 
 
 def list_reviews_impl(
-    package_name: str,
-    max_results: int = 50,
-    translation_language: str | None = None,
+        package_name: str,
+        max_results: int = 50,
+        translation_language: str | None = None,
 ) -> Dict[str, Any]:
     """List recent reviews for an app.
 
