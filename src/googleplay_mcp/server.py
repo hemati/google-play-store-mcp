@@ -4,7 +4,7 @@ This module wires together tool implementations and registers them with a
 `FastMCP` instance so that they can be invoked by MCP clients.
 """
 
-from mcp.server.fastmcp import FastMCP
+from fastmcp import FastMCP
 
 from .models import (
     ListReviewsIn, ListReviewsOut,
