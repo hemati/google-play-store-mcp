@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "googleplay-mcp": {
+      "command": "/home/wahed/miniconda3/envs/googleplay-mcp/bin/python",
+      "args": [
+        "-m",
+        "googleplay_mcp.server"
+      ],
+      "env": {
+        "GOOGLE_SERVICE_ACCOUNT_JSON": "./secrets/service_account.json",
+        "DEFAULT_TZ": "Europe/Berlin",
+        "PYTHONPATH": "./src"
+      },
+      "disabled": false,
+      "alwaysAllow": []
+    }
+  }
+}
