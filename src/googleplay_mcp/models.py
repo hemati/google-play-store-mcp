@@ -74,3 +74,165 @@ class SubscriptionGetIn(BaseModel):
 
 class SubscriptionGetOut(BaseModel):
     data: Dict[str, Any]
+
+
+# --- Listings (text/video) ---
+class ListLocalizedListingsIn(BaseModel):
+    package_name: str
+
+
+class ListLocalizedListingsOut(BaseModel):
+    data: Dict[str, Any]
+
+
+class GetListingIn(BaseModel):
+    package_name: str
+    language: str = Field(..., description="BCP-47, e.g. 'en-US'")
+
+
+class GetListingOut(BaseModel):
+    data: Dict[str, Any]
+
+
+class PatchListingIn(BaseModel):
+    package_name: str
+    language: str
+    title: Optional[str] = None
+    short_description: Optional[str] = None
+    full_description: Optional[str] = None
+    video: Optional[str] = None
+    changes_not_sent_for_review: bool = False
+
+
+class PatchListingOut(BaseModel):
+    data: Dict[str, Any]
+
+
+class UpdateListingIn(BaseModel):
+    package_name: str
+    language: str
+    title: str
+    short_description: str
+    full_description: str
+    video: Optional[str] = None
+    changes_not_sent_for_review: bool = False
+
+
+class UpdateListingOut(BaseModel):
+    data: Dict[str, Any]
+
+
+# --- Images (assets) ---
+class ImagesListIn(BaseModel):
+    package_name: str
+    language: str
+    image_type: str = Field(
+        ...,
+        description=(
+            "AppImageType, e.g. 'phoneScreenshots', 'sevenInchScreenshots', 'tenInchScreenshots',\n"
+            "'tvScreenshots', 'wearScreenshots', 'icon', 'featureGraphic', 'tvBanner'"
+        ),
+    )
+
+
+class ImagesListOut(BaseModel):
+    data: Dict[str, Any]
+
+
+class ImagesDeleteAllIn(BaseModel):
+    package_name: str
+    language: str
+    image_type: str
+    changes_not_sent_for_review: bool = False
+
+
+class ImagesDeleteAllOut(BaseModel):
+    data: Dict[str, Any]
+
+
+class ImagesUploadIn(BaseModel):
+    package_name: str
+    language: str
+    image_type: str
+    file_path: str = Field(..., description="Path to local image file")
+    mime_type: Optional[str] = None
+    changes_not_sent_for_review: bool = False
+
+
+class ImagesUploadOut(BaseModel):
+    data: Dict[str, Any]
+
+
+# --- App details ---
+class DetailsGetIn(BaseModel):
+    package_name: str
+
+
+class DetailsGetOut(BaseModel):
+    data: Dict[str, Any]
+
+
+class DetailsUpdateIn(BaseModel):
+    package_name: str
+    default_language: Optional[str] = None
+    contact_email: Optional[str] = None
+    contact_phone: Optional[str] = None
+    contact_website: Optional[str] = None
+    changes_not_sent_for_review: bool = False
+
+
+class DetailsUpdateOut(BaseModel):
+    data: Dict[str, Any]
+
+
+# --- Localization Ops ---
+class LocaleCoverageIn(BaseModel):
+    package_name: str
+    target_locales: Optional[List[str]] = Field(
+        default=None,
+        description="Optional: list of BCP-47 locales to compare against",
+    )
+
+
+class LocaleCoverageOut(BaseModel):
+    data: Dict[str, Any]
+
+
+class CloneListingToLocaleIn(BaseModel):
+    package_name: str
+    src_language: str
+    dst_language: str
+    copy_text: bool = True
+    copy_video: bool = True
+    copy_assets: bool = False
+    mirror_image_types: Optional[List[str]] = None
+    changes_not_sent_for_review: bool = False
+
+
+class CloneListingToLocaleOut(BaseModel):
+    data: Dict[str, Any]
+
+
+class ValidateMetadataPolicyIn(BaseModel):
+    title: Optional[str] = None
+    short_description: Optional[str] = None
+    full_description: Optional[str] = None
+
+
+class ValidateMetadataPolicyOut(BaseModel):
+    data: Dict[str, Any]
+
+
+class AssetSpecCheckIn(BaseModel):
+    image_type: str = Field(
+        ...,
+        description=(
+            "'icon' | 'featureGraphic' | 'phoneScreenshots' | 'sevenInchScreenshots' |\n"
+            "'tenInchScreenshots' | 'tvScreenshots' | 'wearScreenshots'"
+        ),
+    )
+    file_path: str
+
+
+class AssetSpecCheckOut(BaseModel):
+    data: Dict[str, Any]

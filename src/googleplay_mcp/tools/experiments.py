@@ -6,10 +6,10 @@ from ..auth import service_account_credentials, ANDROID_PUBLISHER_SCOPE
 
 
 def create_listing_experiment_impl(
-    package_name: str,
-    experiment_id: str,
-    variant_id: str,
-    traffic_percent: int = 50,
+        package_name: str,
+        experiment_id: str,
+        variant_id: str,
+        traffic_percent: int = 50,
 ) -> Dict[str, Any]:
     """Create a simple store-listing experiment.
 
