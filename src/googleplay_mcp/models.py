@@ -40,6 +40,31 @@ class CrashRateOut(BaseModel):
     data: Dict[str, Any]
 
 
+class AnrRateIn(BaseModel):
+    """Input for querying ANR rate metrics via Reporting API."""
+    package_name: str
+    start_date: str  # ISO date YYYY-MM-DD
+    end_date: str  # ISO date YYYY-MM-DD
+    timezone: str = "Europe/Berlin"
+
+
+class AnrRateOut(BaseModel):
+    data: Dict[str, Any]
+
+
+# --- Experiments ---
+class ExperimentCreateIn(BaseModel):
+    """Input for creating a store-listing experiment."""
+    package_name: str
+    experiment_id: str
+    variant_id: str
+    traffic_percent: int = Field(50, ge=1, le=99)
+
+
+class ExperimentCreateOut(BaseModel):
+    data: Dict[str, Any]
+
+
 # --- Purchases ---
 class SubscriptionGetIn(BaseModel):
     """Input for checking a subscription purchase using SubscriptionsV2."""

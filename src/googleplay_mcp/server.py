@@ -7,21 +7,30 @@ This module wires together tool implementations and registers them with a
 from fastmcp import FastMCP
 
 from .models import (
-    ListReviewsIn, ListReviewsOut,
-    ReplyReviewIn, ReplyReviewOut,
-    CrashRateIn, CrashRateOut,
-    SubscriptionGetIn, SubscriptionGetOut,
+    ListReviewsIn,
+    ListReviewsOut,
+    ReplyReviewIn,
+    ReplyReviewOut,
+    CrashRateIn,
+    CrashRateOut,
+    AnrRateIn,
+    AnrRateOut,
+    ExperimentCreateIn,
+    ExperimentCreateOut,
+    SubscriptionGetIn,
+    SubscriptionGetOut,
 )
 from .tools.purchases import subscriptions_v2_get_impl
-from .tools.reporting import crash_rate_query_impl
+from .tools.reporting import crash_rate_query_impl, anr_rate_query_impl
 from .tools.reviews import list_reviews_impl, reply_review_impl
+from .tools.experiments import create_listing_experiment_impl
 
 # Human-friendly server name + instructions (visible to MCP clients)
 mcp = FastMCP(
     name="googleplay-mcp",
     instructions=(
-        "Tools for Google Play: reviews, replies, crash-rate metrics, and subscription checks. "
-        "Authenticated via Google Service Account."
+        "Tools for Google Play: reviews, replies, crash- and ANR-rate metrics, listing "
+        "experiments, and subscription checks. Authenticated via Google Service Account."
     ),
 )
 
@@ -85,6 +94,26 @@ def crash_rate(payload: CrashRateIn) -> CrashRateOut:
 
 
 @mcp.tool()
+def anr_rate(payload: AnrRateIn) -> AnrRateOut:
+    """Retrieve ANR-rate metrics for a package over a date range.
+
+    Args:
+        payload: Contains the package name, start and end dates and an optional
+            timezone for interpreting the date range.
+
+    Returns:
+        AnrRateOut: ANR-rate metrics from the Play Developer Reporting API.
+    """
+    data = anr_rate_query_impl(
+        package_name=payload.package_name,
+        start_date=payload.start_date,
+        end_date=payload.end_date,
+        timezone=payload.timezone,
+    )
+    return AnrRateOut(data=data)
+
+
+@mcp.tool()
 def get_subscription_v2(payload: SubscriptionGetIn) -> SubscriptionGetOut:
     """Verify a user's subscription purchase.
 
@@ -101,6 +130,26 @@ def get_subscription_v2(payload: SubscriptionGetIn) -> SubscriptionGetOut:
         token=payload.token,
     )
     return SubscriptionGetOut(data=data)
+
+
+@mcp.tool()
+def create_listing_experiment(payload: ExperimentCreateIn) -> ExperimentCreateOut:
+    """Create a store-listing experiment for a package.
+
+    Args:
+        payload: Includes the package name, experiment ID, variant ID and the
+            traffic percentage assigned to the variant.
+
+    Returns:
+        ExperimentCreateOut: API response describing the created experiment.
+    """
+    data = create_listing_experiment_impl(
+        package_name=payload.package_name,
+        experiment_id=payload.experiment_id,
+        variant_id=payload.variant_id,
+        traffic_percent=payload.traffic_percent,
+    )
+    return ExperimentCreateOut(data=data)
 
 
 if __name__ == "__main__":
