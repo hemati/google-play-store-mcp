@@ -43,7 +43,6 @@ def crash_rate_query_impl(
     }
     return svc.vitals().crashrate().query(name=name, body=body).execute()
 
-
 def anr_rate_query_impl(
     package_name: str,
     start_date: str,

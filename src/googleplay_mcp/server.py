@@ -11,10 +11,6 @@ from .models import (
     ListReviewsOut,
     ReplyReviewIn,
     ReplyReviewOut,
-    CrashRateIn,
-    CrashRateOut,
-    AnrRateIn,
-    AnrRateOut,
     ExperimentCreateIn,
     ExperimentCreateOut,
     SubscriptionGetIn,
@@ -38,6 +34,13 @@ from .models import (
     DetailsUpdateIn,
     DetailsUpdateOut,
 
+    # Reporting
+    CrashRateIn,
+    CrashRateOut,
+    AnrRateIn,
+    AnrRateOut,
+
+    # Localization helpers
     LocaleCoverageIn,
     LocaleCoverageOut,
     CloneListingToLocaleIn,
@@ -46,8 +49,30 @@ from .models import (
     ValidateMetadataPolicyOut,
     AssetSpecCheckIn,
     AssetSpecCheckOut,
+
+    # Experiments orchestrator
+    ExperimentsCreatePlanIn, ExperimentsCreatePlanOut,
+    ExperimentsListPlansOut,
+    ExperimentsGetPlanIn, ExperimentsGetPlanOut,
+    ExperimentsDeletePlanIn, ExperimentsDeletePlanOut,
+    ExperimentsStartManualIn, ExperimentsStartManualOut,
+    ExperimentsComputeSignificanceIn, ExperimentsComputeSignificanceOut,
+    ExperimentsApplyWinnerIn, ExperimentsApplyWinnerOut,
+    ExperimentsStopIn, ExperimentsStopOut,
+    GuardExperimentReadinessIn, GuardExperimentReadinessOut,
 )
 from .tools.experiments import create_listing_experiment_impl
+from .tools.experiments_orchestrator import (
+    experiments_create_plan_impl,
+    experiments_list_plans_impl,
+    experiments_get_plan_impl,
+    experiments_delete_plan_impl,
+    experiments_start_manual_impl,
+    experiments_compute_significance_impl,
+    experiments_apply_winner_impl,
+    experiments_stop_impl,
+    guard_experiment_readiness_impl,
+)
 from .tools.listings import (
     list_localized_listings_impl,
     get_listing_impl,
@@ -59,18 +84,15 @@ from .tools.listings import (
     details_get_impl,
     details_update_impl,
 )
-
-
-from tools.localization import (
+from .tools.localization import (
     list_locale_coverage_impl,
     clone_listing_to_locale_impl,
     validate_metadata_policy_impl,
     asset_spec_check_impl,
 )
 from .tools.purchases import subscriptions_v2_get_impl
+from .tools.reporting import crash_rate_query_impl, anr_rate_query_impl
 from .tools.reviews import list_reviews_impl, reply_review_impl
-# from .tools.reporting import crash_rate_query_impl, anr_rate_query_impl
-
 
 # Human-friendly server name + instructions (visible to MCP clients)
 mcp = FastMCP(
@@ -120,44 +142,44 @@ def reply_to_review(payload: ReplyReviewIn) -> ReplyReviewOut:
     return ReplyReviewOut(data=data)
 
 
-# @mcp.tool()
-# def crash_rate(payload: CrashRateIn) -> CrashRateOut:
-#     """Retrieve crash-rate metrics for a package over a date range.
-#
-#     Args:
-#         payload: Contains the package name, start and end dates and an optional
-#             timezone for interpreting the date range.
-#
-#     Returns:
-#         CrashRateOut: Crash-rate metrics from the Play Developer Reporting API.
-#     """
-#     data = crash_rate_query_impl(
-#         package_name=payload.package_name,
-#         start_date=payload.start_date,
-#         end_date=payload.end_date,
-#         timezone=payload.timezone,
-#     )
-#     return CrashRateOut(data=data)
-#
-#
-# @mcp.tool()
-# def anr_rate(payload: AnrRateIn) -> AnrRateOut:
-#     """Retrieve ANR-rate metrics for a package over a date range.
-#
-#     Args:
-#         payload: Contains the package name, start and end dates and an optional
-#             timezone for interpreting the date range.
-#
-#     Returns:
-#         AnrRateOut: ANR-rate metrics from the Play Developer Reporting API.
-#     """
-#     data = anr_rate_query_impl(
-#         package_name=payload.package_name,
-#         start_date=payload.start_date,
-#         end_date=payload.end_date,
-#         timezone=payload.timezone,
-#     )
-#     return AnrRateOut(data=data)
+@mcp.tool()
+def crash_rate(payload: CrashRateIn) -> CrashRateOut:
+    """Retrieve crash-rate metrics for a package over a date range.
+
+    Args:
+        payload: Contains the package name, start and end dates and an optional
+            timezone for interpreting the date range.
+
+    Returns:
+        CrashRateOut: Crash-rate metrics from the Play Developer Reporting API.
+    """
+    data = crash_rate_query_impl(
+        package_name=payload.package_name,
+        start_date=payload.start_date,
+        end_date=payload.end_date,
+        timezone=payload.timezone,
+    )
+    return CrashRateOut(data=data)
+
+
+@mcp.tool()
+def anr_rate(payload: AnrRateIn) -> AnrRateOut:
+    """Retrieve ANR-rate metrics for a package over a date range.
+
+    Args:
+        payload: Contains the package name, start and end dates and an optional
+            timezone for interpreting the date range.
+
+    Returns:
+        AnrRateOut: ANR-rate metrics from the Play Developer Reporting API.
+    """
+    data = anr_rate_query_impl(
+        package_name=payload.package_name,
+        start_date=payload.start_date,
+        end_date=payload.end_date,
+        timezone=payload.timezone,
+    )
+    return AnrRateOut(data=data)
 
 
 @mcp.tool()
@@ -343,6 +365,90 @@ def asset_spec_check(payload: AssetSpecCheckIn) -> AssetSpecCheckOut:
     """Validate a local image file against Google Play size/format requirements."""
     data = asset_spec_check_impl(image_type=payload.image_type, file_path=payload.file_path)
     return AssetSpecCheckOut(data=data)
+
+
+@mcp.tool()
+def experiments_create_plan(payload: ExperimentsCreatePlanIn) -> ExperimentsCreatePlanOut:
+    """Create a local experiment plan (variants for a given locale)."""
+    out = experiments_create_plan_impl(
+        package_name=payload.package_name,
+        language=payload.language,
+        name=payload.name,
+        hypothesis=payload.hypothesis,
+        metric=payload.metric,
+        traffic_proportion=payload.traffic_proportion,
+        type=payload.type,
+        variants=[v.dict() for v in payload.variants],
+        notes=payload.notes,
+    )
+    return ExperimentsCreatePlanOut(**out)
+
+
+@mcp.tool()
+def experiments_list_plans() -> ExperimentsListPlansOut:
+    """List all locally stored experiment plans."""
+    out = experiments_list_plans_impl()
+    return ExperimentsListPlansOut(**out)
+
+
+@mcp.tool()
+def experiments_get_plan(payload: ExperimentsGetPlanIn) -> ExperimentsGetPlanOut:
+    """Get a single experiment plan by id."""
+    out = experiments_get_plan_impl(plan_id=payload.plan_id)
+    return ExperimentsGetPlanOut(**out)
+
+
+@mcp.tool()
+def experiments_delete_plan(payload: ExperimentsDeletePlanIn) -> ExperimentsDeletePlanOut:
+    """Delete an experiment plan (local JSON)."""
+    out = experiments_delete_plan_impl(plan_id=payload.plan_id)
+    return ExperimentsDeletePlanOut(**out)
+
+
+@mcp.tool()
+def experiments_start_manual(payload: ExperimentsStartManualIn) -> ExperimentsStartManualOut:
+    """Mark plan as 'running' and return step-by-step Console instructions to start it manually."""
+    out = experiments_start_manual_impl(plan_id=payload.plan_id)
+    return ExperimentsStartManualOut(**out)
+
+
+@mcp.tool()
+def experiments_compute_significance(payload: ExperimentsComputeSignificanceIn) -> ExperimentsComputeSignificanceOut:
+    """Compute Bayesian winner probability & relative lifts for provided metrics."""
+    out = experiments_compute_significance_impl(
+        plan_id=payload.plan_id,
+        metrics=payload.metrics,
+        samples=payload.samples,
+    )
+    return ExperimentsComputeSignificanceOut(**out)
+
+
+@mcp.tool()
+def experiments_apply_winner(payload: ExperimentsApplyWinnerIn) -> ExperimentsApplyWinnerOut:
+    """Promote the winning variant content to the live listing for the locale (text + assets)."""
+    out = experiments_apply_winner_impl(
+        plan_id=payload.plan_id,
+        variant_id=payload.variant_id,
+        changes_not_sent_for_review=payload.changes_not_sent_for_review,
+    )
+    return ExperimentsApplyWinnerOut(**out)
+
+
+@mcp.tool()
+def experiments_stop(payload: ExperimentsStopIn) -> ExperimentsStopOut:
+    """Mark plan as 'stopped' (no API call to Console)."""
+    out = experiments_stop_impl(plan_id=payload.plan_id)
+    return ExperimentsStopOut(**out)
+
+
+@mcp.tool()
+def guard_experiment_readiness(payload: GuardExperimentReadinessIn) -> GuardExperimentReadinessOut:
+    """Check locale presence and basic readiness before creating an experiment plan."""
+    out = guard_experiment_readiness_impl(
+        package_name=payload.package_name,
+        language=payload.language,
+    )
+    return GuardExperimentReadinessOut(**out)
 
 
 if __name__ == "__main__":

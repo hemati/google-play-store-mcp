@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 
 from pydantic import BaseModel, Field
 
@@ -236,3 +236,109 @@ class AssetSpecCheckIn(BaseModel):
 
 class AssetSpecCheckOut(BaseModel):
     data: Dict[str, Any]
+
+
+class VariantSpecModel(BaseModel):
+    label: str
+    title: Optional[str] = None
+    short_description: Optional[str] = None
+    full_description: Optional[str] = None
+    video: Optional[str] = None
+    assets: Optional[List[List[str]]] = Field(
+        default=None,
+        description="List of [image_type, file_path] pairs",
+    )
+
+
+class ExperimentsCreatePlanIn(BaseModel):
+    package_name: str
+    language: str
+    name: str
+    hypothesis: Optional[str] = None
+    metric: str = Field("cvr", description="Optimization metric: e.g., 'cvr' or 'acquisitions'")
+    traffic_proportion: float = Field(1.0, ge=0.1, le=1.0)
+    type: str = Field("text", description="'text' | 'graphics' | 'mixed'")
+    variants: List[VariantSpecModel]
+    notes: Optional[str] = None
+
+
+class ExperimentsCreatePlanOut(BaseModel):
+    plan: Dict[str, Any]
+
+
+class ExperimentsListPlansOut(BaseModel):
+    plans: List[Dict[str, Any]]
+
+
+class ExperimentsGetPlanIn(BaseModel):
+    plan_id: str
+
+
+class ExperimentsGetPlanOut(BaseModel):
+    plan: Dict[str, Any]
+
+
+class ExperimentsDeletePlanIn(BaseModel):
+    plan_id: str
+
+
+class ExperimentsDeletePlanOut(BaseModel):
+    deleted: bool
+
+
+class ExperimentsStartManualIn(BaseModel):
+    plan_id: str
+
+
+class ExperimentsStartManualOut(BaseModel):
+    plan_id: str
+    status: str
+    instructions: List[str]
+    variants: List[Dict[str, Any]]
+    note: str
+
+
+class ExperimentsComputeSignificanceIn(BaseModel):
+    plan_id: str
+    metrics: Dict[str, Dict[str, int]] = Field(
+        ..., description="{variant_id: {visitors: int, conversions: int}}"
+    )
+    samples: int = 20000
+
+
+class ExperimentsComputeSignificanceOut(BaseModel):
+    plan_id: str
+    result: Dict[str, Any]
+
+
+class ExperimentsApplyWinnerIn(BaseModel):
+    plan_id: str
+    variant_id: str
+    changes_not_sent_for_review: bool = False
+
+
+class ExperimentsApplyWinnerOut(BaseModel):
+    plan_id: str
+    applied_variant: str
+    text_patch: Dict[str, Any]
+    asset_uploads: List[Dict[str, Any]]
+    status: str
+
+
+class ExperimentsStopIn(BaseModel):
+    plan_id: str
+
+
+class ExperimentsStopOut(BaseModel):
+    plan_id: str
+    status: str
+
+
+class GuardExperimentReadinessIn(BaseModel):
+    package_name: str
+    language: str
+
+
+class GuardExperimentReadinessOut(BaseModel):
+    locale_present: bool
+    present_locales: List[str]
