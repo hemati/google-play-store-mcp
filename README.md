@@ -23,6 +23,18 @@ pip install -e .
 cp .env.example .env  # optional
 ````
 
+
+## Deploy to Render (EU)
+
+Place your Google service account key at `secrets/service_account.json` before running the deploy script. The script encodes and uploads it as an environment variable for the Render service.
+
+```bash
+export RENDER_API_KEY=your_key BASIC_AUTH_USER=admin BASIC_AUTH_PASSWORD=secret
+./scripts/deploy_render.sh
+```
+
+The script deploys to Render's Frankfurt region, enables HTTP basic authentication, and provisions the service account key at runtime.
+
 ## Tools
 
 ### `list_reviews`
