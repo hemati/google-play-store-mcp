@@ -1,0 +1,13 @@
+services:
+  googleplay-mcp:
+    build: .
+    image: googleplay-mcp:latest
+    ports:
+      - "8000:8000"
+    environment:
+      GOOGLE_SERVICE_ACCOUNT_JSON: /secrets/service_account.json
+      MCP_TRANSPORT: sse
+      MCP_HOST: 0.0.0.0
+      MCP_PORT: 8000
+    volumes:
+      - ./secrets/service_account.json:/secrets/service_account.json:ro

@@ -471,5 +471,6 @@ def experiments_trends_report(payload: ExperimentsTrendsReportIn) -> Experiments
 
 
 if __name__ == "__main__":
-    # Default: STDIO transport (works with local MCP clients like Claude Desktop / MCP Inspector)
-    mcp.run(transport="stdio") #transport="streamable-http")
+    from .cli import main
+
+    main()
