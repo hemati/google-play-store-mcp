@@ -60,6 +60,7 @@ from .models import (
     ExperimentsApplyWinnerIn, ExperimentsApplyWinnerOut,
     ExperimentsStopIn, ExperimentsStopOut,
     GuardExperimentReadinessIn, GuardExperimentReadinessOut,
+    ExperimentsTrendsReportIn, ExperimentsTrendsReportOut,
 )
 from .tools.experiments import create_listing_experiment_impl
 from .tools.experiments_orchestrator import (
@@ -72,6 +73,7 @@ from .tools.experiments_orchestrator import (
     experiments_apply_winner_impl,
     experiments_stop_impl,
     guard_experiment_readiness_impl,
+    experiments_trends_report_impl,
 )
 from .tools.listings import (
     list_localized_listings_impl,
@@ -451,6 +453,23 @@ def guard_experiment_readiness(payload: GuardExperimentReadinessIn) -> GuardExpe
     return GuardExperimentReadinessOut(**out)
 
 
+@mcp.tool()
+def experiments_trends_report(payload: ExperimentsTrendsReportIn) -> ExperimentsTrendsReportOut:
+    """Build a trends report across past experiments using GCS acquisition exports (CSV)."""
+    out = experiments_trends_report_impl(
+        bucket=payload.bucket,
+        prefix=payload.prefix,
+        plan_ids=payload.plan_ids,
+        store_listing=payload.store_listing,
+        country=payload.country,
+        default_window_days=payload.default_window_days,
+        start_date=payload.start_date,
+        end_date=payload.end_date,
+        min_visitors=payload.min_visitors,
+    )
+    return ExperimentsTrendsReportOut(**out)
+
+
 if __name__ == "__main__":
     # Default: STDIO transport (works with local MCP clients like Claude Desktop / MCP Inspector)
-    mcp.run(transport="streamable-http")
+    mcp.run(transport="stdio") #transport="streamable-http")

@@ -342,3 +342,21 @@ class GuardExperimentReadinessIn(BaseModel):
 class GuardExperimentReadinessOut(BaseModel):
     locale_present: bool
     present_locales: List[str]
+
+
+class ExperimentsTrendsReportIn(BaseModel):
+    bucket: str = Field(..., description="GCS bucket name that holds programmatic exports")
+    prefix: str = Field(..., description="GCS prefix/path where CSVs live")
+    plan_ids: Optional[List[str]] = Field(default=None, description="Optional subset of experiment plan ids")
+    store_listing: Optional[str] = Field(default=None, description="Optional store listing filter")
+    country: Optional[str] = Field(default=None, description="Optional country filter (2-letter)")
+    default_window_days: int = 7
+    start_date: Optional[str] = Field(default=None, description="Optional YYYY-MM to prune GCS listing")
+    end_date: Optional[str] = Field(default=None, description="Optional YYYY-MM to prune GCS listing")
+    min_visitors: int = 100
+
+class ExperimentsTrendsReportOut(BaseModel):
+    plans_considered: List[str]
+    results: List[Dict[str, Any]]
+    summary_by_type: Dict[str, Any]
+    summary_by_language: Dict[str, Any]
