@@ -4,7 +4,9 @@
       "command": "/home/wahed/miniconda3/envs/googleplay-mcp/bin/python",
       "args": [
         "-m",
-        "googleplay_mcp.server"
+        "googleplay_mcp",
+        "--transport",
+        "stdio"
       ],
       "env": {
         "GOOGLE_SERVICE_ACCOUNT_JSON": "./secrets/service_account.json",
