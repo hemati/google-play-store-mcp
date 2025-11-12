@@ -4,97 +4,114 @@ This module wires together tool implementations and registers them with a
 `FastMCP` instance so that they can be invoked by MCP clients.
 """
 
-from fastmcp import FastMCP
+import os
 
-from .models import (
-    ListReviewsIn,
-    ListReviewsOut,
-    ReplyReviewIn,
-    ReplyReviewOut,
-    ExperimentCreateIn,
-    ExperimentCreateOut,
-    SubscriptionGetIn,
-    SubscriptionGetOut,
-    ListLocalizedListingsIn,
-    ListLocalizedListingsOut,
-    GetListingIn,
-    GetListingOut,
-    PatchListingIn,
-    PatchListingOut,
-    UpdateListingIn,
-    UpdateListingOut,
-    ImagesListIn,
-    ImagesListOut,
-    ImagesDeleteAllIn,
-    ImagesDeleteAllOut,
-    ImagesUploadIn,
-    ImagesUploadOut,
+from fastmcp import FastMCP
+from fastmcp.server.auth.providers.auth0 import Auth0Provider
+
+from .models import (  # Reporting; Localization helpers; Experiments orchestrator
+    AnrRateIn,
+    AnrRateOut,
+    AssetSpecCheckIn,
+    AssetSpecCheckOut,
+    CloneListingToLocaleIn,
+    CloneListingToLocaleOut,
+    CrashRateIn,
+    CrashRateOut,
     DetailsGetIn,
     DetailsGetOut,
     DetailsUpdateIn,
     DetailsUpdateOut,
-
-    # Reporting
-    CrashRateIn,
-    CrashRateOut,
-    AnrRateIn,
-    AnrRateOut,
-
-    # Localization helpers
+    ExperimentCreateIn,
+    ExperimentCreateOut,
+    ExperimentsApplyWinnerIn,
+    ExperimentsApplyWinnerOut,
+    ExperimentsComputeSignificanceIn,
+    ExperimentsComputeSignificanceOut,
+    ExperimentsCreatePlanIn,
+    ExperimentsCreatePlanOut,
+    ExperimentsDeletePlanIn,
+    ExperimentsDeletePlanOut,
+    ExperimentsGetPlanIn,
+    ExperimentsGetPlanOut,
+    ExperimentsListPlansOut,
+    ExperimentsStartManualIn,
+    ExperimentsStartManualOut,
+    ExperimentsStopIn,
+    ExperimentsStopOut,
+    ExperimentsTrendsReportIn,
+    ExperimentsTrendsReportOut,
+    GetListingIn,
+    GetListingOut,
+    GuardExperimentReadinessIn,
+    GuardExperimentReadinessOut,
+    ImagesDeleteAllIn,
+    ImagesDeleteAllOut,
+    ImagesListIn,
+    ImagesListOut,
+    ImagesUploadIn,
+    ImagesUploadOut,
+    ListLocalizedListingsIn,
+    ListLocalizedListingsOut,
+    ListReviewsIn,
+    ListReviewsOut,
     LocaleCoverageIn,
     LocaleCoverageOut,
-    CloneListingToLocaleIn,
-    CloneListingToLocaleOut,
+    PatchListingIn,
+    PatchListingOut,
+    ReplyReviewIn,
+    ReplyReviewOut,
+    SubscriptionGetIn,
+    SubscriptionGetOut,
+    UpdateListingIn,
+    UpdateListingOut,
     ValidateMetadataPolicyIn,
     ValidateMetadataPolicyOut,
-    AssetSpecCheckIn,
-    AssetSpecCheckOut,
-
-    # Experiments orchestrator
-    ExperimentsCreatePlanIn, ExperimentsCreatePlanOut,
-    ExperimentsListPlansOut,
-    ExperimentsGetPlanIn, ExperimentsGetPlanOut,
-    ExperimentsDeletePlanIn, ExperimentsDeletePlanOut,
-    ExperimentsStartManualIn, ExperimentsStartManualOut,
-    ExperimentsComputeSignificanceIn, ExperimentsComputeSignificanceOut,
-    ExperimentsApplyWinnerIn, ExperimentsApplyWinnerOut,
-    ExperimentsStopIn, ExperimentsStopOut,
-    GuardExperimentReadinessIn, GuardExperimentReadinessOut,
-    ExperimentsTrendsReportIn, ExperimentsTrendsReportOut,
 )
 from .tools.experiments import create_listing_experiment_impl
 from .tools.experiments_orchestrator import (
-    experiments_create_plan_impl,
-    experiments_list_plans_impl,
-    experiments_get_plan_impl,
-    experiments_delete_plan_impl,
-    experiments_start_manual_impl,
-    experiments_compute_significance_impl,
     experiments_apply_winner_impl,
+    experiments_compute_significance_impl,
+    experiments_create_plan_impl,
+    experiments_delete_plan_impl,
+    experiments_get_plan_impl,
+    experiments_list_plans_impl,
+    experiments_start_manual_impl,
     experiments_stop_impl,
-    guard_experiment_readiness_impl,
     experiments_trends_report_impl,
+    guard_experiment_readiness_impl,
 )
 from .tools.listings import (
-    list_localized_listings_impl,
-    get_listing_impl,
-    patch_listing_impl,
-    update_listing_impl,
-    images_list_impl,
-    images_deleteall_impl,
-    images_upload_impl,
     details_get_impl,
     details_update_impl,
+    get_listing_impl,
+    images_deleteall_impl,
+    images_list_impl,
+    images_upload_impl,
+    list_localized_listings_impl,
+    patch_listing_impl,
+    update_listing_impl,
 )
 from .tools.localization import (
-    list_locale_coverage_impl,
-    clone_listing_to_locale_impl,
-    validate_metadata_policy_impl,
     asset_spec_check_impl,
+    clone_listing_to_locale_impl,
+    list_locale_coverage_impl,
+    validate_metadata_policy_impl,
 )
 from .tools.purchases import subscriptions_v2_get_impl
-from .tools.reporting import crash_rate_query_impl, anr_rate_query_impl
+from .tools.reporting import anr_rate_query_impl, crash_rate_query_impl
 from .tools.reviews import list_reviews_impl, reply_review_impl
+
+auth = Auth0Provider(
+    # Dein Auth0-Tenant
+    config_url=f"https://{os.environ['AUTH0_DOMAIN']}/.well-known/openid-configuration",
+    client_id=os.environ["AUTH0_CLIENT_ID"],
+    client_secret=os.environ["AUTH0_CLIENT_SECRET"],
+    # Audience = Identifier deiner API
+    audience=os.environ.get("AUTH0_AUDIENCE", "https://appcoholic.com/mcp/googleplay"),
+    # Öffentliche Basis-URL deines MCP-Servers (mit Pfad!)
+    base_url="https://appcoholic.com/mcp/googleplay",
+)
 
 # Human-friendly server name + instructions (visible to MCP clients)
 mcp = FastMCP(
@@ -103,6 +120,7 @@ mcp = FastMCP(
         "Tools for Google Play: reviews, replies, crash- and ANR-rate metrics, listing "
         "experiments, and subscription checks. Authenticated via Google Service Account."
     ),
+    auth=auth,
 )
 
 
@@ -224,7 +242,9 @@ def create_listing_experiment(payload: ExperimentCreateIn) -> ExperimentCreateOu
 
 
 @mcp.tool()
-def list_localized_listings(payload: ListLocalizedListingsIn) -> ListLocalizedListingsOut:
+def list_localized_listings(
+    payload: ListLocalizedListingsIn,
+) -> ListLocalizedListingsOut:
     """Return all localized store listings for the current edit."""
     data = list_localized_listings_impl(package_name=payload.package_name)
     return ListLocalizedListingsOut(data=data)
@@ -233,7 +253,9 @@ def list_localized_listings(payload: ListLocalizedListingsIn) -> ListLocalizedLi
 @mcp.tool()
 def get_listing(payload: GetListingIn) -> GetListingOut:
     """Get a single localized listing by language (BCP-47)."""
-    data = get_listing_impl(package_name=payload.package_name, language=payload.language)
+    data = get_listing_impl(
+        package_name=payload.package_name, language=payload.language
+    )
     return GetListingOut(data=data)
 
 
@@ -352,7 +374,9 @@ def clone_listing_to_locale(payload: CloneListingToLocaleIn) -> CloneListingToLo
 
 
 @mcp.tool()
-def validate_metadata_policy(payload: ValidateMetadataPolicyIn) -> ValidateMetadataPolicyOut:
+def validate_metadata_policy(
+    payload: ValidateMetadataPolicyIn,
+) -> ValidateMetadataPolicyOut:
     """Validate metadata strings (title/short/full) against Play policy and limits."""
     data = validate_metadata_policy_impl(
         title=payload.title,
@@ -365,12 +389,16 @@ def validate_metadata_policy(payload: ValidateMetadataPolicyIn) -> ValidateMetad
 @mcp.tool()
 def asset_spec_check(payload: AssetSpecCheckIn) -> AssetSpecCheckOut:
     """Validate a local image file against Google Play size/format requirements."""
-    data = asset_spec_check_impl(image_type=payload.image_type, file_path=payload.file_path)
+    data = asset_spec_check_impl(
+        image_type=payload.image_type, file_path=payload.file_path
+    )
     return AssetSpecCheckOut(data=data)
 
 
 @mcp.tool()
-def experiments_create_plan(payload: ExperimentsCreatePlanIn) -> ExperimentsCreatePlanOut:
+def experiments_create_plan(
+    payload: ExperimentsCreatePlanIn,
+) -> ExperimentsCreatePlanOut:
     """Create a local experiment plan (variants for a given locale)."""
     out = experiments_create_plan_impl(
         package_name=payload.package_name,
@@ -401,21 +429,27 @@ def experiments_get_plan(payload: ExperimentsGetPlanIn) -> ExperimentsGetPlanOut
 
 
 @mcp.tool()
-def experiments_delete_plan(payload: ExperimentsDeletePlanIn) -> ExperimentsDeletePlanOut:
+def experiments_delete_plan(
+    payload: ExperimentsDeletePlanIn,
+) -> ExperimentsDeletePlanOut:
     """Delete an experiment plan (local JSON)."""
     out = experiments_delete_plan_impl(plan_id=payload.plan_id)
     return ExperimentsDeletePlanOut(**out)
 
 
 @mcp.tool()
-def experiments_start_manual(payload: ExperimentsStartManualIn) -> ExperimentsStartManualOut:
+def experiments_start_manual(
+    payload: ExperimentsStartManualIn,
+) -> ExperimentsStartManualOut:
     """Mark plan as 'running' and return step-by-step Console instructions to start it manually."""
     out = experiments_start_manual_impl(plan_id=payload.plan_id)
     return ExperimentsStartManualOut(**out)
 
 
 @mcp.tool()
-def experiments_compute_significance(payload: ExperimentsComputeSignificanceIn) -> ExperimentsComputeSignificanceOut:
+def experiments_compute_significance(
+    payload: ExperimentsComputeSignificanceIn,
+) -> ExperimentsComputeSignificanceOut:
     """Compute Bayesian winner probability & relative lifts for provided metrics."""
     out = experiments_compute_significance_impl(
         plan_id=payload.plan_id,
@@ -426,7 +460,9 @@ def experiments_compute_significance(payload: ExperimentsComputeSignificanceIn) 
 
 
 @mcp.tool()
-def experiments_apply_winner(payload: ExperimentsApplyWinnerIn) -> ExperimentsApplyWinnerOut:
+def experiments_apply_winner(
+    payload: ExperimentsApplyWinnerIn,
+) -> ExperimentsApplyWinnerOut:
     """Promote the winning variant content to the live listing for the locale (text + assets)."""
     out = experiments_apply_winner_impl(
         plan_id=payload.plan_id,
@@ -444,7 +480,9 @@ def experiments_stop(payload: ExperimentsStopIn) -> ExperimentsStopOut:
 
 
 @mcp.tool()
-def guard_experiment_readiness(payload: GuardExperimentReadinessIn) -> GuardExperimentReadinessOut:
+def guard_experiment_readiness(
+    payload: GuardExperimentReadinessIn,
+) -> GuardExperimentReadinessOut:
     """Check locale presence and basic readiness before creating an experiment plan."""
     out = guard_experiment_readiness_impl(
         package_name=payload.package_name,
@@ -454,7 +492,9 @@ def guard_experiment_readiness(payload: GuardExperimentReadinessIn) -> GuardExpe
 
 
 @mcp.tool()
-def experiments_trends_report(payload: ExperimentsTrendsReportIn) -> ExperimentsTrendsReportOut:
+def experiments_trends_report(
+    payload: ExperimentsTrendsReportIn,
+) -> ExperimentsTrendsReportOut:
     """Build a trends report across past experiments using GCS acquisition exports (CSV)."""
     out = experiments_trends_report_impl(
         bucket=payload.bucket,
