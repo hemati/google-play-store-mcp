@@ -61,6 +61,8 @@ from .models import (  # Reporting; Localization helpers; Experiments orchestrat
     PatchListingOut,
     ReplyReviewIn,
     ReplyReviewOut,
+    ListSubscriptionsIn,
+    ListSubscriptionsOut,
     SubscriptionGetIn,
     SubscriptionGetOut,
     UpdateListingIn,
@@ -98,20 +100,19 @@ from .tools.localization import (
     list_locale_coverage_impl,
     validate_metadata_policy_impl,
 )
-from .tools.purchases import subscriptions_v2_get_impl
+from .tools.purchases import list_subscriptions_impl, subscriptions_v2_get_impl
 from .tools.reporting import anr_rate_query_impl, crash_rate_query_impl
 from .tools.reviews import list_reviews_impl, reply_review_impl
 
-auth = Auth0Provider(
-    # Dein Auth0-Tenant
-    config_url=f"https://{os.environ['AUTH0_DOMAIN']}/.well-known/openid-configuration",
-    client_id=os.environ["AUTH0_CLIENT_ID"],
-    client_secret=os.environ["AUTH0_CLIENT_SECRET"],
-    # Audience = Identifier deiner API
-    audience=os.environ.get("AUTH0_AUDIENCE", "https://appcoholic.com/mcp/googleplay"),
-    # Öffentliche Basis-URL deines MCP-Servers (mit Pfad!)
-    base_url="https://appcoholic.com/mcp/googleplay",
-)
+auth = None
+if os.environ.get("AUTH0_DOMAIN"):
+    auth = Auth0Provider(
+        config_url=f"https://{os.environ['AUTH0_DOMAIN']}/.well-known/openid-configuration",
+        client_id=os.environ["AUTH0_CLIENT_ID"],
+        client_secret=os.environ["AUTH0_CLIENT_SECRET"],
+        audience=os.environ.get("AUTH0_AUDIENCE", "https://appcoholic.com/mcp/googleplay"),
+        base_url="https://appcoholic.com/mcp/googleplay",
+    )
 
 # Human-friendly server name + instructions (visible to MCP clients)
 mcp = FastMCP(
@@ -219,6 +220,21 @@ def get_subscription_v2(payload: SubscriptionGetIn) -> SubscriptionGetOut:
         token=payload.token,
     )
     return SubscriptionGetOut(data=data)
+
+
+@mcp.tool()
+def list_subscriptions(payload: ListSubscriptionsIn) -> ListSubscriptionsOut:
+    """List all subscription products with pricing for a package.
+
+    Args:
+        payload: Contains the application package name.
+
+    Returns:
+        ListSubscriptionsOut: Subscription products from the
+        `monetization.subscriptions.list` API call.
+    """
+    data = list_subscriptions_impl(package_name=payload.package_name)
+    return ListSubscriptionsOut(data=data)
 
 
 @mcp.tool()

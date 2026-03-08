@@ -76,6 +76,15 @@ class SubscriptionGetOut(BaseModel):
     data: Dict[str, Any]
 
 
+class ListSubscriptionsIn(BaseModel):
+    """Input for listing subscription products for a package."""
+    package_name: str = Field(..., description="Android package name, e.g. 'com.example.app'")
+
+
+class ListSubscriptionsOut(BaseModel):
+    data: Dict[str, Any]
+
+
 # --- Listings (text/video) ---
 class ListLocalizedListingsIn(BaseModel):
     package_name: str

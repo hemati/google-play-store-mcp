@@ -24,3 +24,22 @@ def subscriptions_v2_get_impl(package_name: str, token: str) -> Dict[str, Any]:
         .get(packageName=package_name, token=token)
         .execute()
     )
+
+
+def list_subscriptions_impl(package_name: str) -> Dict[str, Any]:
+    """List all subscription products with pricing for a package.
+
+    Args:
+        package_name: The application package name.
+
+    Returns:
+        Dict[str, Any]: Raw response from the monetization.subscriptions.list endpoint.
+    """
+    creds = service_account_credentials(ANDROID_PUBLISHER_SCOPE)
+    svc = build("androidpublisher", "v3", credentials=creds, cache_discovery=False)
+    return (
+        svc.monetization()
+        .subscriptions()
+        .list(packageName=package_name)
+        .execute()
+    )
