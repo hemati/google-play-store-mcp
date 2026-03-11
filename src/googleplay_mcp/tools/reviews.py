@@ -22,10 +22,10 @@ def list_reviews_impl(
     """
     creds = service_account_credentials(ANDROID_PUBLISHER_SCOPE)
     svc = build("androidpublisher", "v3", credentials=creds, cache_discovery=False)
-    req = svc.reviews().list(packageName=package_name, maxResults=max_results)
+    kwargs = {"packageName": package_name, "maxResults": max_results}
     if translation_language:
-        req = req.add_query_parameter("translationLanguage", translation_language)
-    return req.execute()
+        kwargs["translationLanguage"] = translation_language
+    return svc.reviews().list(**kwargs).execute()
 
 
 def reply_review_impl(package_name: str, review_id: str, reply_text: str) -> Dict[str, Any]:

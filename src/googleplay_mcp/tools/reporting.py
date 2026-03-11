@@ -5,6 +5,23 @@ from googleapiclient.discovery import build
 from ..auth import service_account_credentials, REPORTING_SCOPE
 
 
+def _parse_date(date_str: str) -> Dict[str, int]:
+    """Parse a ``YYYY-MM-DD`` string into year/month/day dict."""
+    parts = date_str.split("-")
+    return {"year": int(parts[0]), "month": int(parts[1]), "day": int(parts[2])}
+
+
+def _make_datetime(date_str: str, hours: int = 0) -> Dict[str, Any]:
+    """Build a ``google.type.DateTime`` structured object.
+
+    The Play Developer Reporting API only accepts year/month/day/hours —
+    minutes, seconds, nanos, utcOffset, and timeZone must be unset.
+    """
+    dt = _parse_date(date_str)
+    dt["hours"] = hours
+    return dt
+
+
 def crash_rate_query_impl(
     package_name: str,
     start_date: str,
@@ -17,7 +34,7 @@ def crash_rate_query_impl(
         package_name: Application package name.
         start_date: Start date in ``YYYY-MM-DD`` format.
         end_date: End date in ``YYYY-MM-DD`` format.
-        timezone: IANA timezone identifier for the date range.
+        timezone: Unused, kept for backwards compatibility.
 
     Returns:
         Dict[str, Any]: Crash-rate metrics grouped by version code.
@@ -28,10 +45,9 @@ def crash_rate_query_impl(
     name = f"apps/{package_name}/crashRateMetricSet"
     body = {
         "timelineSpec": {
-            "startTime": f"{start_date}T00:00:00Z",
-            "endTime": f"{end_date}T23:59:59Z",
+            "startTime": _make_datetime(start_date),
+            "endTime": _make_datetime(end_date),
             "aggregationPeriod": "DAILY",
-            "timezone": timezone,
         },
         "metrics": [
             "crashRate",
@@ -55,7 +71,7 @@ def anr_rate_query_impl(
         package_name: Application package name.
         start_date: Start date in ``YYYY-MM-DD`` format.
         end_date: End date in ``YYYY-MM-DD`` format.
-        timezone: IANA timezone identifier for the date range.
+        timezone: Unused, kept for backwards compatibility.
 
     Returns:
         Dict[str, Any]: ANR-rate metrics grouped by version code.
@@ -66,10 +82,9 @@ def anr_rate_query_impl(
     name = f"apps/{package_name}/anrRateMetricSet"
     body = {
         "timelineSpec": {
-            "startTime": f"{start_date}T00:00:00Z",
-            "endTime": f"{end_date}T23:59:59Z",
+            "startTime": _make_datetime(start_date),
+            "endTime": _make_datetime(end_date),
             "aggregationPeriod": "DAILY",
-            "timezone": timezone,
         },
         "metrics": [
             "anrRate",
